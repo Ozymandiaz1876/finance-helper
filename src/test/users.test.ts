@@ -1,12 +1,12 @@
 import request from 'supertest';
 import { App } from '@/app';
-import pg from '@database';
+import db from '@database';
 import { CreateUserDto } from '@dtos/users.dto';
 import { UserRoute } from '@routes/users.route';
 
 afterAll(async () => {
   await new Promise<void>(resolve => setTimeout(() => resolve(), 500));
-  pg.end();
+  // pg.end();
 });
 
 describe('Testing Users', () => {

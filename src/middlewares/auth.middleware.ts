@@ -1,7 +1,7 @@
 import { NextFunction, Response } from 'express';
 import { verify } from 'jsonwebtoken';
 import { SECRET_KEY } from '@config';
-import pg from '@database';
+import db from '@database';
 import { HttpException } from '@exceptions/httpException';
 import { DataStoredInToken, RequestWithUser } from '@interfaces/auth.interface';
 
@@ -21,21 +21,13 @@ export const AuthMiddleware = async (req: RequestWithUser, res: Response, next: 
 
     if (Authorization) {
       const { id } = (await verify(Authorization, SECRET_KEY)) as DataStoredInToken;
-      const { rows, rowCount } = await pg.query(
-        `
-        SELECT
-          "email",
-          "password"
-        FROM
-          users
-        WHERE
-          "id" = $1
-      `,
-        id,
-      );
 
-      if (rowCount) {
-        req.user = rows[0];
+      const currentUser = await db.query.users.findFirst({
+        where: (users, { eq }) => eq(users.id, id),
+      });
+
+      if (currentUser) {
+        req.user = currentUser;
         next();
       } else {
         next(new HttpException(401, 'Wrong authentication token'));

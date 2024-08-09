@@ -1,7 +1,7 @@
-import { pgTable, serial, text, varchar } from 'drizzle-orm/pg-core';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Client } from 'pg';
 import { POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, POSTGRES_DB } from '@config';
+import * as schema from './schema';
 
 const client = new Client({
   host: POSTGRES_HOST,
@@ -11,6 +11,5 @@ const client = new Client({
   database: POSTGRES_DB,
 });
 client.connect();
-export default drizzle(client);
-
-// export default client.connect();
+const db = drizzle(client, { schema });
+export default db;

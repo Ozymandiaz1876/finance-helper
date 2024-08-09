@@ -6,14 +6,17 @@
   "license": "ISC",
   "scripts": {
     "start": "npm run build && cross-env NODE_ENV=production node dist/server.js",
-    "dev": "cross-env NODE_ENV=development nodemon",
+    "dev": "cross-env NODE_ENV=development nodemon --trace-warnings -L",
     "build": "swc src -d dist --source-maps --copy-files",
     "build:tsc": "tsc && tsc-alias",
     "test": "jest --forceExit --detectOpenHandles",
     "lint": "eslint --ignore-path .gitignore --ext .ts src/",
     "lint:fix": "npm run lint -- --fix",
     "deploy:prod": "npm run build && pm2 start ecosystem.config.js --only prod",
-    "deploy:dev": "pm2 start ecosystem.config.js --only dev"
+    "deploy:dev": "pm2 start ecosystem.config.js --only dev",
+    "db:push": "pnpm drizzle-kit push",
+    "db:migrate": "pnpm drizzle-kit migrate",
+    "db:studio": "pnpm drizzle-kit studio"
   },
   "dependencies": {
     "bcrypt": "^5.0.1",
@@ -31,7 +34,10 @@
     "jsonwebtoken": "^8.5.1",
     "morgan": "^1.10.0",
     "pg": "^8.12.0",
+    "portscanner": "^2.2.0",
     "postgres": "^3.4.4",
+    "puppeteer": "^23.0.2",
+    "puppeteer-core": "^23.0.2",
     "reflect-metadata": "^0.1.3",
     "swagger-jsdoc": "^6.2.1",
     "swagger-ui-express": "^4.5.0",
@@ -53,6 +59,7 @@
     "@types/morgan": "^1.9.3",
     "@types/node": "^17.0.45",
     "@types/pg": "^8.11.6",
+    "@types/portscanner": "^2.1.4",
     "@types/supertest": "^2.0.12",
     "@types/swagger-jsdoc": "^6.0.1",
     "@types/swagger-ui-express": "^4.1.3",

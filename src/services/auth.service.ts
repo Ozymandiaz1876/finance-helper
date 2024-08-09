@@ -2,10 +2,11 @@ import { hash, compare } from 'bcrypt';
 import { sign } from 'jsonwebtoken';
 import { Service } from 'typedi';
 import { SECRET_KEY } from '@config';
-import pg from '@database';
+import db from '@database';
 import { HttpException } from '@exceptions/httpException';
 import { DataStoredInToken, TokenData } from '@interfaces/auth.interface';
 import { User } from '@interfaces/users.interface';
+import { users } from '@/database/schema';
 
 const createToken = (user: User): TokenData => {
   const dataStoredInToken: DataStoredInToken = { id: user.id };
@@ -23,81 +24,48 @@ export class AuthService {
   public async signup(userData: User): Promise<User> {
     const { email, password } = userData;
 
-    const { rows: findUser } = await pg.query(
-      `
-    SELECT EXISTS(
-      SELECT
-        "email"
-      FROM
-        users
-      WHERE
-        "email" = $1
-    )`,
-      [email],
-    );
-    if (findUser[0].exists) throw new HttpException(409, `This email ${userData.email} already exists`);
+    const currentUser = await db.query.users.findFirst({
+      where: (users, { eq }) => eq(users.email, email),
+    });
+    if (currentUser) throw new HttpException(409, `This email ${userData.email} already exists`);
 
     const hashedPassword = await hash(password, 10);
-    const { rows: signUpUserData } = await pg.query(
-      `
-      INSERT INTO
-        users(
-          "email",
-          "password"
-        )
-      VALUES ($1, $2)
-      RETURNING "email", "password"
-      `,
-      [email, hashedPassword],
-    );
 
-    return signUpUserData[0];
+    const createdUser = await db.insert(users).values({ email: email, password: hashedPassword }).returning();
+
+    return createdUser[0];
   }
 
   public async login(userData: User): Promise<{ cookie: string; findUser: User }> {
     const { email, password } = userData;
 
-    const { rows, rowCount } = await pg.query(
-      `
-      SELECT
-        "email",
-        "password"
-      FROM
-        users
-      WHERE
-        "email" = $1
-    `,
-      [email],
-    );
-    if (!rowCount) throw new HttpException(409, `This email ${email} was not found`);
+    const currentUser = await db.query.users.findFirst({
+      where: (users, { eq }) => eq(users.email, email),
+    });
 
-    const isPasswordMatching: boolean = await compare(password, rows[0].password);
+    if (!currentUser) throw new HttpException(409, `This email ${email} was not found`);
+
+    const isPasswordMatching: boolean = await compare(password, currentUser.password);
     if (!isPasswordMatching) throw new HttpException(409, "You're password not matching");
 
-    const tokenData = createToken(rows[0]);
+    const tokenData = createToken(currentUser);
     const cookie = createCookie(tokenData);
-    return { cookie, findUser: rows[0] };
+    return { cookie, findUser: currentUser };
   }
 
   public async logout(userData: User): Promise<User> {
     const { email, password } = userData;
 
-    const { rows, rowCount } = await pg.query(
-      `
-    SELECT
-        "email",
-        "password"
-      FROM
-        users
-      WHERE
-        "email" = $1
-      AND
-        "password" = $2
-    `,
-      [email, password],
-    );
-    if (!rowCount) throw new HttpException(409, "User doesn't exist");
+    const currentUser = await db.query.users.findFirst({
+      where: (users, { eq }) => eq(users.email, email),
+    });
 
-    return rows[0];
+    if (!currentUser) throw new HttpException(409, "User doesn't exist");
+
+    const isPasswordMatching: boolean = await compare(password, currentUser.password);
+
+    if (!isPasswordMatching) throw new HttpException(409, "You're password's not matching");
+
+    return currentUser;
   }
 }

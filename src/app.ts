@@ -8,7 +8,7 @@ import hpp from 'hpp';
 import morgan from 'morgan';
 import swaggerJSDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import { NODE_ENV, PORT, LOG_FORMAT, ORIGIN, CREDENTIALS } from '@config';
+import { NODE_ENV, PORTS, LOG_FORMAT, ORIGIN, CREDENTIALS } from '@config';
 import { Routes } from '@interfaces/routes.interface';
 import { ErrorMiddleware } from '@middlewares/error.middleware';
 import { logger, stream } from '@utils/logger';
@@ -17,11 +17,11 @@ export class App {
   public app: express.Application;
   public env: string;
   public port: string | number;
+  public defaultPort = 3000;
 
   constructor(routes: Routes[]) {
     this.app = express();
     this.env = NODE_ENV || 'development';
-    this.port = PORT || 3000;
 
     this.initializeMiddlewares();
     this.initializeRoutes(routes);
@@ -30,6 +30,15 @@ export class App {
   }
 
   public listen() {
+    // const ports = PORTS.split(' ').map(el => +el);
+
+    this.port = this.defaultPort;
+
+    // TODO : updates this.port, fix this
+    // await this.getOpenPort(ports);
+
+    console.log(this.port);
+
     this.app.listen(this.port, () => {
       logger.info(`=================================`);
       logger.info(`======= ENV: ${this.env} =======`);
@@ -78,4 +87,20 @@ export class App {
   private initializeErrorHandling() {
     this.app.use(ErrorMiddleware);
   }
+
+  // TODO : not working in docker, fix me
+  // private async getOpenPort(portsToSearch = [3000, 3005, 3006]) {
+  //   return new Promise((resolve, reject) => {
+  //     portscanner.findAPortNotInUse(portsToSearch, '127.0.0.1', (error, port) => {
+  //       if (error) {
+  //         console.log(error);
+
+  //         reject(this.defaultPort);
+  //       }
+  //       console.log('AVAILABLE PORT AT: ' + port);
+  //       this.port = port || this.defaultPort;
+  //       resolve(port);
+  //     });
+  //   });
+  // }
 }

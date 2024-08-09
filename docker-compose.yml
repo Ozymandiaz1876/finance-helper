@@ -39,18 +39,29 @@ services:
   pg:
     container_name: pg
     image: postgres:14.5-alpine
+    hostname: postgres
     ports:
-      - "5432:5432"
+      - 5432:5432
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: password
       POSTGRES_DB: dev
     volumes:
-      # - ./postgresdata:/var/lib/postgresql/data
+      - ./postgresdata:/var/lib/postgresql/data
       - ./src/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: "always"
     networks:
       - backend
+
+  adminer:
+    image: adminer
+    restart: always
+    hostname: adminer
+    container_name: adminer
+    networks:
+      - backend
+    ports:
+      - 8080:8080
 
 networks:
   backend:
