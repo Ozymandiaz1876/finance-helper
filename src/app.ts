@@ -12,27 +12,28 @@ import { NODE_ENV, PORTS, LOG_FORMAT, ORIGIN, CREDENTIALS } from '@config';
 import { Routes } from '@interfaces/routes.interface';
 import { ErrorMiddleware } from '@middlewares/error.middleware';
 import { logger, stream } from '@utils/logger';
-import { initializeRedisClient } from './middlewares/cache.middleware';
+import { cacheMiddleware } from './middlewares/cache.middleware';
 
 export class App {
   public app: express.Application;
   public env: string;
   public port: string | number;
   public defaultPort = 3000;
-  public routes: Routes[];
+  public cacheClient: cacheMiddleware;
 
-  constructor(routes: Routes[]) {
+  constructor() {
     this.app = express();
     this.env = NODE_ENV || 'development';
-    this.routes = routes;
   }
 
   public async initializeServer() {
-    await initializeRedisClient();
-    this.initializeMiddlewares();
-    this.initializeRoutes(this.routes);
+    await this.initializeMiddlewares();
     this.initializeSwagger();
     this.initializeErrorHandling();
+  }
+
+  public addRoutes(routes: Routes[]) {
+    this.initializeRoutes(routes);
   }
 
   public listen() {
@@ -55,7 +56,7 @@ export class App {
     return this.app;
   }
 
-  private initializeMiddlewares() {
+  private async initializeMiddlewares() {
     this.app.use(morgan(LOG_FORMAT, { stream }));
     this.app.use(cors({ origin: ORIGIN, credentials: CREDENTIALS }));
     this.app.use(hpp());
@@ -64,6 +65,12 @@ export class App {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(cookieParser());
+    await this.addCacheMiddleware();
+  }
+
+  private async addCacheMiddleware() {
+    this.cacheClient = new cacheMiddleware();
+    await this.cacheClient.initializeRedisClient();
   }
 
   private initializeRoutes(routes: Routes[]) {

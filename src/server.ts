@@ -6,13 +6,13 @@ import { FinanceRoute } from './routes/finance.route';
 
 ValidateEnv();
 
-const routes = [new AuthRoute(), new UserRoute(), new FinanceRoute()];
-
-const app = new App(routes);
+const app = new App();
 
 app
   .initializeServer()
   .then(() => {
+    const routes = [new AuthRoute(app.cacheClient), new UserRoute(app.cacheClient), new FinanceRoute(app.cacheClient)];
+    app.addRoutes(routes);
     app.listen();
   })
   .catch(e => console.error(e));
