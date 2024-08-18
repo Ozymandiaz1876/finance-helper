@@ -22,3 +22,6 @@ To get the service up and running, follow these steps:
    ```bash
    git clone https://https://github.com/Ozymandiaz1876/finance-helper.git
    cd finance-helper
+2. **start the server**:
+   ```bash
+   docker compose up -d
