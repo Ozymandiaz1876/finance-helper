@@ -10,4 +10,9 @@ const routes = [new AuthRoute(), new UserRoute(), new FinanceRoute()];
 
 const app = new App(routes);
 
-app.listen();
+app
+  .initializeServer()
+  .then(() => {
+    app.listen();
+  })
+  .catch(e => console.error(e));

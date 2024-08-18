@@ -5,6 +5,12 @@ import { getTextContentFromPage } from './helpers/scrap.helper';
 
 @Service()
 export class FinanceInfo {
+  /**
+   * Scrapes financial data from Google Finance based on the provided search query.
+   *
+   * @param {string} searchQuery - The stock symbol to search for (e.g. 'ADANIGREEN:NSE')
+   * @return {object} An object containing the scraped financial data
+   */
   public async scrapData(searchQuery = 'ADANIGREEN:NSE') {
     const browser = await puppeteer.launch({
       args: ['--no-sandbox'],

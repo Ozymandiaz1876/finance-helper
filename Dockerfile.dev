@@ -23,9 +23,9 @@ COPY . ./app
 WORKDIR /app
 
 
-# RUN npm install -g pnpm
+RUN npm install -g pnpm
 
-RUN npm install
+RUN pnpm install
 
 # RUN pnpm run build
 
@@ -39,4 +39,4 @@ ENV NODE_ENV development
 EXPOSE 4983 5432
 
 # Cmd script
-CMD ["npm", "run", "dev"]
+CMD ["pnpm", "run", "dev"]

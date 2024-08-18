@@ -12,19 +12,25 @@ import { NODE_ENV, PORTS, LOG_FORMAT, ORIGIN, CREDENTIALS } from '@config';
 import { Routes } from '@interfaces/routes.interface';
 import { ErrorMiddleware } from '@middlewares/error.middleware';
 import { logger, stream } from '@utils/logger';
+import { initializeRedisClient } from './middlewares/cache.middleware';
 
 export class App {
   public app: express.Application;
   public env: string;
   public port: string | number;
   public defaultPort = 3000;
+  public routes: Routes[];
 
   constructor(routes: Routes[]) {
     this.app = express();
     this.env = NODE_ENV || 'development';
+    this.routes = routes;
+  }
 
+  public async initializeServer() {
+    await initializeRedisClient();
     this.initializeMiddlewares();
-    this.initializeRoutes(routes);
+    this.initializeRoutes(this.routes);
     this.initializeSwagger();
     this.initializeErrorHandling();
   }
@@ -36,8 +42,6 @@ export class App {
 
     // TODO : updates this.port, fix this
     // await this.getOpenPort(ports);
-
-    console.log(this.port);
 
     this.app.listen(this.port, () => {
       logger.info(`=================================`);
@@ -85,6 +89,17 @@ export class App {
   }
 
   private initializeErrorHandling() {
+    // for unhandled exceptions, catch them and let the app crash for server restart
+    process
+      .on('unhandledRejection', (reason, p) => {
+        console.error(reason, 'Unhandled Rejection at Promise', p);
+        process.exit(1);
+      })
+      .on('uncaughtException', err => {
+        console.error(err, 'Uncaught Exception thrown');
+        process.exit(1);
+      });
+
     this.app.use(ErrorMiddleware);
   }
 
@@ -94,7 +109,6 @@ export class App {
   //     portscanner.findAPortNotInUse(portsToSearch, '127.0.0.1', (error, port) => {
   //       if (error) {
   //         console.log(error);
-
   //         reject(this.defaultPort);
   //       }
   //       console.log('AVAILABLE PORT AT: ' + port);
