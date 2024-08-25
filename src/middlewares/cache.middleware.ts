@@ -4,6 +4,16 @@ import { createClient } from 'redis';
 export class cacheMiddleware {
   public redisClient;
 
+  /**
+   * Initializes a Redis client by reading the connection URL from the environment variables
+   * and creating a Redis client object. If the connection URL is not provided, the function
+   * exits early. If the Redis client is successfully connected, it logs a success message
+   * and sets up an error event listener. If there is an error connecting to Redis, it logs an
+   * error message and the error object.
+   *
+   * @return {Promise<void>} A promise that resolves when the Redis client is successfully
+   * connected, or rejects with an error if there is an issue connecting.
+   */
   async initializeRedisClient() {
     // read the Redis connection URL from the envs
     const redisHost = process.env.REDIS_HOST;
@@ -39,6 +49,14 @@ export class cacheMiddleware {
     }
   }
 
+  /**
+   * Writes data to the Redis cache.
+   *
+   * @param {string} key - The key to store the data under.
+   * @param {*} data - The data to store in the Redis cache.
+   * @param {*} options - Options for the Redis set operation.
+   * @return {Promise<void>} A promise that resolves when the data is written to the Redis cache.
+   */
   private async writeData(key, data, options) {
     if (isRedisWorking(this.redisClient)) {
       try {
@@ -51,6 +69,12 @@ export class cacheMiddleware {
     }
   }
 
+  /**
+   * Retrieves data from the Redis cache.
+   *
+   * @param {string} key - The key to retrieve data from.
+   * @return {*} The cached data, or undefined if not found.
+   */
   private async readData(key) {
     let cachedValue = undefined;
 
@@ -64,6 +88,13 @@ export class cacheMiddleware {
     }
   }
 
+  /**
+   * Enables caching for the given request.
+   *
+   * @param {object} options - Options for the caching middleware.
+   * @param {number} options.EX - The expiration time for the cached data in seconds.
+   * @return {function} A middleware function that handles caching for the given request.
+   */
   public useCacheMiddleware(
     options = {
       EX: 21600, // 6h

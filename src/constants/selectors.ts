@@ -1,4 +1,4 @@
-export enum Selectors {
+export enum GoogleFinanceSelectors {
   COMPANY_NAME = '.zzDege',
   CURRENT_PRICE = '.YMlKec.fxKbKc',
   CHANGE_TODAY = '.P2Luy.Ebnabc.ZYVHBb',

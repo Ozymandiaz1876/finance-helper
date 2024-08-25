@@ -16,7 +16,7 @@ export class FinanceRoute implements Routes {
 
   private initializeRoutes() {
     this.router.get(
-      `${this.path}/:searchQuery([A-Z0-9]+:[A-Z]+)`,
+      `${this.path}/:searchQuery([A-Z0-9]+:[A-Z0-9]+)`,
       this.cacheClient.useCacheMiddleware({
         EX: 43200, // 12h
       }),

@@ -1,3 +1,4 @@
-import { Selectors } from './selectors';
+import { GoogleFinanceSelectors } from './selectors';
+import { GOOGLE_FINANCE_PAGE } from './pages';
 
-export { Selectors };
+export { GoogleFinanceSelectors, GOOGLE_FINANCE_PAGE };

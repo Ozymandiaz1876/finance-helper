@@ -14,7 +14,7 @@ export class UserService {
     return currentUsers;
   }
 
-  public async findUserById(userId: number): Promise<User> {
+  public async findUserById(userId: string): Promise<User> {
     const user = await db.query.users.findFirst({
       where: (users, { eq }) => eq(users.id, userId),
     });
@@ -38,7 +38,7 @@ export class UserService {
     return createdUser[0];
   }
 
-  public async updateUser(userId: number, userData: User): Promise<User[]> {
+  public async updateUser(userId: string, userData: User): Promise<User[]> {
     const currentUser = await db.query.users.findFirst({
       where: (users, { eq }) => eq(users.id, userId),
     });
@@ -51,7 +51,7 @@ export class UserService {
     return updatedUser;
   }
 
-  public async deleteUser(userId: number): Promise<User[]> {
+  public async deleteUser(userId: string): Promise<User[]> {
     const currentUser = await db.query.users.findFirst({
       where: (users, { eq }) => eq(users.id, userId),
     });
